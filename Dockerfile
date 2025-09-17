@@ -6,7 +6,7 @@
 FROM maven:3.9.8-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# copy project and build
+# Copy project và build
 COPY pom.xml .
 COPY src ./src
 RUN mvn -B -DskipTests clean package
@@ -16,14 +16,15 @@ RUN mvn -B -DskipTests clean package
 ############################
 FROM tomcat:11.0-jdk17-temurin
 
-# múi giờ tuỳ chọn
 ENV TZ=Asia/Ho_Chi_Minh
-
-# (tuỳ chọn) dọn webapps mặc định cho sạch
+# (tuỳ chọn) dọn webapps mặc định
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# copy WAR đã build và đặt context path là /bai7
-COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/bai7.war
+# Đặt WAR thành ROOT.war => context path = "/"
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+
+# Một số options gọn nhẹ + UTF-8
+ENV CATALINA_OPTS="-Dfile.encoding=UTF-8 -Djava.awt.headless=true -Xms128m -Xmx256m"
 
 EXPOSE 8080
 CMD ["catalina.sh", "run"]
